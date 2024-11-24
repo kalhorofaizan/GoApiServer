@@ -2,24 +2,20 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
+	"goserver/middleware"
 	"net/http"
 )
 
 type loginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	docoder := json.NewDecoder(r.Body)
-	body := loginRequest{}
-	if err := docoder.Decode(&body); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
-		return
-	}
-	w.Write([]byte("ok"))
-	defer r.Body.Close()
+	body := r.Context().Value("body").(*loginRequest)
+	fmt.Println(body)
+	json.NewEncoder(w).Encode(body)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +24,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 func HandleAuthRouter() *http.ServeMux {
 	authRouter := http.NewServeMux()
-	authRouter.HandleFunc("POST /login", login)
+	authRouter.HandleFunc("POST /login", middleware.BodyValidator[loginRequest](login))
 	authRouter.HandleFunc("GET /status", status)
 	return authRouter
 }
