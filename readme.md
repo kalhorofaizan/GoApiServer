@@ -5,7 +5,7 @@
 
 
 ## Feature
-- basic Route
+- Basic Route system
 - Body validator
 - Auth validator
 - Jwt Token
