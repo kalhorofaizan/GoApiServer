@@ -24,7 +24,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(body)
 	jwt := core.NewJwtLib()
 	token, refresh := jwt.SignJwt(core.StandardClaims{Id: "123"})
-	jwt.ValidateJwt(token)
+	claims, err := jwt.ValidateJwt(token)
+	fmt.Println(claims)
+	fmt.Println(err)
+
 	json.NewEncoder(w).Encode(map[string]string{"token": token, "refresh": refresh})
 }
 
@@ -41,6 +44,6 @@ func HandleAuthRouter() *http.ServeMux {
 	authRouter := http.NewServeMux()
 	authRouter.HandleFunc("POST /login", middleware.BodyValidator[loginRequest](login))
 	authRouter.HandleFunc("POST /signup", middleware.BodyValidator[signupRequest](register))
-	authRouter.HandleFunc("GET /status", status)
+	authRouter.HandleFunc("GET /status", middleware.AuthRequest(status))
 	return authRouter
 }

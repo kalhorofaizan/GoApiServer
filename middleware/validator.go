@@ -3,6 +3,9 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"goserver/core"
+
 	"net/http"
 	"strings"
 
@@ -39,6 +42,29 @@ func BodyValidator[T any](handler func(http.ResponseWriter, *http.Request)) func
 			return
 		}
 		ctx := context.WithValue(r.Context(), "body", body)
+		req := r.WithContext(ctx)
+		handler(w, req)
+	}
+}
+
+func AuthRequest(handler func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		fmt.Println(token)
+		token = strings.ReplaceAll(token, "Bearer ", "")
+		if token == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(validateErr{"error": "Unauthorized"})
+			return
+		}
+		jwt := core.NewJwtLib()
+		claims, err := jwt.ValidateJwt(token)
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(validateErr{"error": "Unauthorized"})
+			return
+		}
+		ctx := context.WithValue(r.Context(), "claims", claims)
 		req := r.WithContext(ctx)
 		handler(w, req)
 	}

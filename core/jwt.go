@@ -47,10 +47,9 @@ func NewJwtLib() JwtLib {
 }
 
 func (jwtLib JwtLib) SignJwt(claims StandardClaims) (string, string) {
-	fmt.Println(claims)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  claims.Id,
-		"nbf": time.Now().Add(time.Duration(jwtLib.expTimeAccessTokenInMin)),
+		"Id": claims.Id,
+		// "nbf": time.Now().Add(time.Duration(jwtLib.expTimeAccessTokenInMin)),
 	})
 	accessTokenString, err := token.SignedString(jwtLib.accessSecret)
 	if err != nil {
@@ -68,23 +67,23 @@ func (jwtLib JwtLib) SignJwt(claims StandardClaims) (string, string) {
 }
 
 func (jwtLib JwtLib) ValidateJwt(tokenString string) (StandardClaims, error) {
-	fmt.Println(tokenString)
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			fmt.Println("unexpected signing method")
 			return nil, errors.New("Invalid Token")
 		}
-		return []byte(jwtLib.secret), errors.New("Invalid Token")
+		return []byte(jwtLib.accessSecret), nil
 	})
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err.Error(), 'a')
 		return StandardClaims{}, errors.New("Invalid Token")
 	}
-	if claims, ok := token.Claims.(StandardClaims); ok {
-		fmt.Println(claims.Id)
+	fmt.Println(token.Claims)
+	claims, ok := token.Claims.(StandardClaims)
+	fmt.Println(ok, "c")
+	if ok {
 		return claims, nil
-	} else {
-		fmt.Println(err)
-		return StandardClaims{}, errors.New("Invalid Token")
 	}
+	fmt.Println(err, "b")
+	return StandardClaims{}, errors.New("Invalid Token")
 }
