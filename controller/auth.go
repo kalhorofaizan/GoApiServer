@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"goserver/core"
 	"goserver/middleware"
 	"net/http"
 )
@@ -21,13 +22,15 @@ type signupRequest struct {
 func login(w http.ResponseWriter, r *http.Request) {
 	body := r.Context().Value("body").(*loginRequest)
 	fmt.Println(body)
-	json.NewEncoder(w).Encode(body)
+	jwt := core.NewJwtLib()
+	token, refresh := jwt.SignJwt(core.StandardClaims{Id: "123"})
+	jwt.ValidateJwt(token)
+	json.NewEncoder(w).Encode(map[string]string{"token": token, "refresh": refresh})
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
 	body := r.Context().Value("body").(*signupRequest)
 	fmt.Println(body)
-	json.NewEncoder(w).Encode(body)
 }
 
 func status(w http.ResponseWriter, r *http.Request) {
