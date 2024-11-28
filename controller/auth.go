@@ -22,6 +22,7 @@ type signupRequest struct {
 func login(w http.ResponseWriter, r *http.Request) {
 	body := r.Context().Value("body").(*loginRequest)
 	fmt.Println(body)
+
 	jwt := core.NewJwtLib()
 	token, refresh := jwt.SignJwt(core.StandardClaims{Id: "123"})
 	claims, err := jwt.ValidateJwt(token)
@@ -33,6 +34,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 func register(w http.ResponseWriter, r *http.Request) {
 	body := r.Context().Value("body").(*signupRequest)
+
 	fmt.Println(body)
 }
 

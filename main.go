@@ -2,6 +2,7 @@ package main
 
 import (
 	"goserver/controller"
+	"goserver/core"
 	"goserver/middleware"
 	"log"
 	"net/http"
@@ -12,11 +13,12 @@ import (
 
 func main() {
 	err := godotenv.Load(".env")
-
 	if err != nil {
 		log.Fatal("Error loading .env file " + err.Error())
 		return
 	}
+	core.DbInit()
+
 	middlewareChain := middleware.HandleChainMiddleware(
 		middleware.EnableCors,
 		middleware.LogApi)
